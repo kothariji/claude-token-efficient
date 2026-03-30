@@ -26,7 +26,7 @@
 - Disagree when wrong. State the correction directly.
 - Do not change a correct answer because the user pushes back.
 
-## Hallucination Prevention
+## Accuracy and Speculation Control
 - Never speculate about code, files, or APIs you have not read.
 - If referencing a file or function: read it first, then answer.
 - If unsure: say "I don't know." Never guess confidently.
