@@ -1,7 +1,7 @@
 # claude-token-efficient
 
-> One file. Drop it in your project. Cuts Claude output verbosity by ~63%. No code changes required.
-> Note: most Claude costs come from input tokens, not output. This file targets output behavior - sycophancy, verbosity, formatting noise. It won't fix your biggest bill but it will fix your most annoying responses.
+> One file. Drop it in your project. Keeps responses terse and can reduce total tokens on output-heavy workflows.
+> Note: instruction files add input tokens on every turn. Keep this file short - if it grows too much, it can cost more than it saves.
 > Model support: benchmarks were run on Claude only. The rules are model-agnostic and should work on any model that reads context - but results on local models like llama.cpp, Mistral, or others are untested. Community results welcome.
 
 ---
@@ -72,6 +72,23 @@ Same 5 prompts. Run without CLAUDE.md (baseline) then with CLAUDE.md (optimized)
 
 > **Methodology note:** This is a 5-prompt directional indicator (T1-T3, T5 for word reduction; T4 is a format test), not a statistically controlled study. Claude's output length varies naturally between identical prompts. No variance controls or repeated runs were applied. Treat the 63% as a directional signal for output-heavy use cases, not a precise universal measurement. The CLAUDE.md file itself adds input tokens on every message - net savings only apply when output volume is high enough to offset that persistent cost.
 
+### External benchmark (Issue #1)
+
+An [independent benchmark](https://github.com/adam-s/testing-claude-agent) ran 6 configs across 3 coding challenges (CSV reporter, SQLite window functions, Hono WebSocket counter). All configs passed all tests, so comparison was purely cost-to-green.
+
+We ran our own v8 config head-to-head against C-structured (the previous best) on the same harness, same day, same model:
+
+| Challenge | M-drona23-v8 | C-structured | Winner |
+|-----------|-------------|-------------|--------|
+| CSV Reporter | $0.244 | $0.282 | v8 |
+| SQLite Windows | $0.406 | $0.376 | C-structured |
+| WebSocket | $0.285 | $0.473 | v8 |
+| **Total** | **$0.935** | **$1.131** | **v8 (-17.4%)** |
+
+The v8 config uses 2 files (7 lines total). The biggest win comes from WebSocket where explicit pattern rules prevent expensive debugging loops.
+
+This repo keeps the root `CLAUDE.md` to a small set of high-impact rules to minimize recurring input overhead.
+
 ### At Scale
 
 | Usage | Tokens Saved/Day | Monthly Savings (Sonnet) |
@@ -111,18 +128,14 @@ for (let i = 0; i < arr.length; i++)
 
 | # | Problem | Fix |
 |---|---------|-----|
-| 1 | Sycophantic openers | Banned - answer is always line 1 |
-| 2 | Hollow closings | Banned - no "I hope this helps!" |
-| 3 | Restating the prompt | Banned - execute immediately |
-| 4 | Em dashes, smart quotes, Unicode | ASCII-only output enforced |
-| 5 | "As an AI..." framing | Banned |
-| 6 | Unnecessary disclaimers | Banned unless genuine safety risk |
-| 7 | Unsolicited suggestions | Banned - exact scope only |
-| 8 | Over-engineered code | Simplest working solution enforced |
-| 9 | Hallucination on uncertain facts | Must say "I don't know" - no guessing |
-| 10 | User correction ignored | Correction becomes session ground truth |
-| 11 | Redundant file reads | Never read the same file twice |
-| 12 | Scope creep | Do not touch code outside the request |
+| 1 | Starts coding without context | Think first; read files before writing |
+| 2 | Verbose responses | Keep output concise |
+| 3 | Rewrites large files unnecessarily | Prefer targeted edits |
+| 4 | Re-reading the same files | Read each file once unless it changed |
+| 5 | Declaring done without validation | Run tests before finishing |
+| 6 | Sycophantic chatter | No flattering preamble/closing fluff |
+| 7 | Over-engineered solutions | Favor simple direct fixes |
+| 8 | Prompt conflict confusion | User instructions always override |
 
 ---
 
@@ -149,6 +162,7 @@ Pick the base file + a profile, or use the base alone.
 | Profile | Best For |
 |---------|----------|
 | `CLAUDE.md` | Universal - works for any project |
+| `profiles/CLAUDE.benchmark.md` | Token-to-green coding benchmarks |
 | `profiles/CLAUDE.coding.md` | Dev projects, code review, debugging |
 | `profiles/CLAUDE.agents.md` | Automation pipelines, multi-agent systems |
 | `profiles/CLAUDE.analysis.md` | Data analysis, research, reporting |

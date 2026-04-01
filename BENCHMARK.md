@@ -23,6 +23,7 @@ Each test targets a specific fix from community research.
 - The CLAUDE.md file itself loads as input tokens on every message - net savings only occur when output volume is high enough to offset that persistent input cost
 - Short queries and low-volume casual use will see a net token increase, not a reduction
 - Best results on output-heavy repeated tasks: agent pipelines, code generation loops, automation bots
+- Independent replication (Issue #1, 2026-04-01) found shorter 7-12 line configs outperform longer rule sets on total tokens in coding tasks
 
 ---
 
@@ -130,6 +131,7 @@ The Universal CLAUDE.md file produced measurably better output across all 5 test
 Average output token reduction: ~63%
 Behavior fixes confirmed: sycophancy, verbose output, ASCII typography, prompt format, hallucination correction.
 No loss of technical accuracy or completeness in any test.
+This benchmark is response-side only; for end-to-end token-to-green comparisons, see Issue #1.
 
 Drop CLAUDE.md in any project. No code changes required.
 
